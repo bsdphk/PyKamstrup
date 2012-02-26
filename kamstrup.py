@@ -11,8 +11,9 @@
 from __future__ import print_function
 
 # You need pySerial 
-
 import serial
+
+import math
 
 #######################################################################
 # These are the variables I have managed to identify
@@ -20,25 +21,43 @@ import serial
 
 kamstrup_382_var = {
 
-	0x0001: "Energy in (kWh)",
-	0x0002: "Energy out (kWh)",
+	0x0001: "Energy in",
+	0x0002: "Energy out",
 
-	0x000d: "Energy in hi-res (kWh)",
-	0x000e: "Energy out hi-res (kWh)",
+	0x000d: "Energy in hi-res",
+	0x000e: "Energy out hi-res",
 
-	0x041e: "Voltage p1 (V)",
-	0x041f: "Voltage p2 (V)",
-	0x0420: "Voltage p3 (V)",
+	0x041e: "Voltage p1",
+	0x041f: "Voltage p2",
+	0x0420: "Voltage p3",
 
-	0x0434: "Current p1 (A)",
-	0x0435: "Current p2 (A)",
-	0x0436: "Current p3 (A)",
+	0x0434: "Current p1",
+	0x0435: "Current p2",
+	0x0436: "Current p3",
 
-	0x0438: "Power p1 (kW)",
-	0x0439: "Power p2 (kW)",
-	0x043a: "Power p3 (kW)",
+	0x0438: "Power p1",
+	0x0439: "Power p2",
+	0x043a: "Power p3",
 }
 
+
+#######################################################################
+# Units, provided by Erik Jensen
+
+units = {
+	0: '', 1: 'Wh', 2: 'kWh', 3: 'MWh', 4: 'GWh', 5: 'j', 6: 'kj', 7: 'Mj',
+	8: 'Gj', 9: 'Cal', 10: 'kCal', 11: 'Mcal', 12: 'Gcal', 13: 'varh',
+	14: 'kvarh', 15: 'Mvarh', 16: 'Gvarh', 17: 'VAh', 18: 'kVAh',
+	19: 'MVAh', 20: 'GVAh', 21: 'kW', 22: 'kW', 23: 'MW', 24: 'GW',
+	25: 'kvar', 26: 'kvar', 27: 'Mvar', 28: 'Gvar', 29: 'VA', 30: 'kVA',
+	31: 'MVA', 32: 'GVA', 33: 'V', 34: 'A', 35: 'kV',36: 'kA', 37: 'C',
+	38: 'K', 39: 'l', 40: 'm3', 41: 'l/h', 42: 'm3/h', 43: 'm3xC',
+	44: 'ton', 45: 'ton/h', 46: 'h', 47: 'hh:mm:ss', 48: 'yy:mm:dd',
+	49: 'yyyy:mm:dd', 50: 'mm:dd', 51: '', 52: 'bar', 53: 'RTC',
+	54: 'ASCII', 55: 'm3 x 10', 56: 'ton x 10', 57: 'GJ x 10',
+	58: 'minutes', 59: 'Bitfield', 60: 's', 61: 'ms', 62: 'days',
+	63: 'RTC-Q', 64: 'Datetime'
+}
 
 #######################################################################
 # Kamstrup uses the "true" CCITT CRC-16
@@ -166,36 +185,57 @@ class kamstrup(object):
 		return c[:-2]
 
 	def readvar(self, nbr):
+		# I wouldn't be surprised if you can ask for more than
+		# one variable at the time, given that the length is
+		# encoded in the response.  Havn't tried.
+
 		self.send(0x80, (0x3f, 0x10, 0x01, nbr >> 8, nbr & 0xff))
+
 		b = self.recv()
 		if b == None:
-			return b
+			return (None, None)
+
 		if b[0] != 0x3f or b[1] != 0x10:
-			return None
+			return (None, None)
+
 		if b[2] != nbr >> 8 or b[3] != nbr & 0xff:
-			return None
+			return (None, None)
+
+		if b[4] in units:
+			u = units[b[4]]
+		else:
+			u = None
+
+		# Decode the mantissa
 		x = 0
-		for i in b[7:]:
+		for i in range(0,b[5]):
 			x <<= 8
-			x |= i
+			x |= b[i + 7]
 
-		s = ""
-		for i in b[:4]:
-			s += " %02x" % i
-		s += " |"
-		for i in b[4:7]:
-			s += " %02x" % i
-		s += " |"
-		for i in b[7:]:
-			s += " %02x" % i
+		# Decode the exponent
+		i = b[6] & 0x3f
+		if b[6] & 0x40:
+			i = -i
+		i = math.pow(10,i)
+		if b[6] & 0x80:
+			i = -i
+		x *= i
 
-		decimals = b[6] & 0x0f
-		while decimals > 0:
-			x *= .1
-			decimals -= 1
+		if False:
+			# Debug print
+			s = ""
+			for i in b[:4]:
+				s += " %02x" % i
+			s += " |"
+			for i in b[4:7]:
+				s += " %02x" % i
+			s += " |"
+			for i in b[7:]:
+				s += " %02x" % i
 
-		#print(s, "=", x)
-		return x
+			print(s, "=", x, units[b[4]])
+
+		return (x, u)
 			
 
 if __name__ == "__main__":
@@ -205,5 +245,5 @@ if __name__ == "__main__":
 	foo = kamstrup()
 
 	for i in kamstrup_382_var:
-		x = foo.readvar(i)
-		print("%-25s" % kamstrup_382_var[i], x)
+		x,u = foo.readvar(i)
+		print("%-25s" % kamstrup_382_var[i], x, u)

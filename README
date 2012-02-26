@@ -5,6 +5,8 @@ There is very little information about this protocol on the net, and
 despite calling it an "open protocol", Kamstrup has not wanted to
 release the documentation for it to me.
 
+Thanks to Erik Jensen for details about units and exponents.
+
 Tested on a Kamstrup 382J electricity-meter using a home-built
 optical head.
 
@@ -14,17 +16,17 @@ Poul-Henning
 
 PS: Sample output:
 
-Energy in (kWh)           6745
-Energy out (kWh)          0
-Energy in hi-res (kWh)    6745.4191
-Energy out hi-res (kWh)   0.0
-Voltage p1 (V)            229
-Voltage p2 (V)            226
-Voltage p3 (V)            232
-Current p1 (A)            5.58
-Current p2 (A)            1.69
-Current p3 (A)            2.36
-Power p1 (kW)             1.029
-Power p2 (kW)             0.322
-Power p3 (kW)             0.438
+Energy in                 6753.0 kWh
+Energy out                0.0 kWh
+Energy in hi-res          6753.3242 kWh
+Energy out hi-res         0.0 kWh
+Voltage p1                229.0 V
+Voltage p2                227.0 V
+Voltage p3                229.0 V
+Current p1                5.41 A
+Current p2                2.12 A
+Current p3                3.07 A
+Power p1                  0.976 kW
+Power p2                  0.475 kW
+Power p3                  0.595 kW
 
