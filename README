@@ -1,0 +1,13 @@
+This is an implementation of the Kamstrup Meter Protocol (KMP) based
+on reverse engineering of a traffic dump.
+
+There is very little information about this protocol on the net, and
+despite calling it an "open protocol", Kamstrup has not wanted to
+release the documentation for it to me.
+
+Tested on a Kamstrup 382J electricity-meter using a home-built
+optical head.
+
+Enjoy,
+
+Poul-Henning
