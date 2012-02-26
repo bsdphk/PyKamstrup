@@ -11,3 +11,20 @@ optical head.
 Enjoy,
 
 Poul-Henning
+
+PS: Sample output:
+
+Energy in (kWh)           6745
+Energy out (kWh)          0
+Energy in hi-res (kWh)    6745.4191
+Energy out hi-res (kWh)   0.0
+Voltage p1 (V)            229
+Voltage p2 (V)            226
+Voltage p3 (V)            232
+Current p1 (A)            5.58
+Current p2 (A)            1.69
+Current p3 (A)            2.36
+Power p1 (kW)             1.029
+Power p2 (kW)             0.322
+Power p3 (kW)             0.438
+
