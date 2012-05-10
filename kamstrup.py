@@ -40,6 +40,14 @@ kamstrup_382_var = {
 	0x043a: "Power p3",
 }
 
+kamstrup_MC601_var = {
+        
+        0x003C: "Energy register 1: Heat energy",
+        0x0044: "Volume register V1",
+        0x0058: "Current temperature T3",
+        0x03EC: "Operation hours counter",
+}
+
 
 #######################################################################
 # Units, provided by Erik Jensen
@@ -95,14 +103,14 @@ escapes = {
 #
 class kamstrup(object):
 
-	def __init__(self, serial_port = "/dev/cuaU0"):
+	def __init__(self, serial_port = "/dev/cuaU0", baud_rate=9600):
 		self.debug_fd = open("/tmp/_kamstrup", "a")
 		self.debug_fd.write("\n\nStart\n")
 		self.debug_id = None
 
 		self.ser = serial.Serial(
 		    port = serial_port,
-		    baudrate = 9600,
+		    baudrate = baud_rate,
 		    timeout = 1.0)
 
 	def debug(self, dir, b):
@@ -242,8 +250,8 @@ if __name__ == "__main__":
 
 	import time
 
-	foo = kamstrup()
+	foo = kamstrup(serial_port="COM4", baud_rate=1200)
 
-	for i in kamstrup_382_var:
+	for i in kamstrup_MC601_var:
 		x,u = foo.readvar(i)
-		print("%-25s" % kamstrup_382_var[i], x, u)
+		print("%-35s" % kamstrup_MC601_var[i], x, u)
