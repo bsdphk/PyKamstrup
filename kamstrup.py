@@ -38,6 +38,16 @@ kamstrup_382_var = {
 	0x0438: "Power p1",
 	0x0439: "Power p2",
 	0x043a: "Power p3",
+
+	0x0056: "Current flow temperature",
+	0x0057: "Current return flow temperature",
+	0x0058: "Current temperature T3",
+	0x007A: "Current temperature T4",
+	0x0059: "Current temperature difference",
+	0x005B: "Pressure in flow",
+	0x005C: "Pressure in return flow",
+	0x004A: "Current flow in flow",
+	0x004B: "Current flow in return flow"
 }
 
 
@@ -102,7 +112,7 @@ class kamstrup(object):
 
 		self.ser = serial.Serial(
 		    port = serial_port,
-		    baudrate = 9600,
+		    baudrate = 1200,
 		    timeout = 1.0)
 
 	def debug(self, dir, b):
