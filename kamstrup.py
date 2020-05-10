@@ -48,6 +48,33 @@ kamstrup_382_var = {
 	0x005C: "Pressure in return flow",
 	0x004A: "Current flow in flow",
 	0x004B: "Current flow in return flow"
+	0x03ff: "Power In",
+	0x0438: "Power p1 In",
+	0x0439: "Power p2 In",
+	0x043a: "Power p3 In",
+
+	0x0400: "Power In",
+	0x0540: "Power p1 Out",
+	0x0541: "Power p2 Out",
+	0x0542: "Power p3 Out",
+}
+
+kamstrup_681_var = {
+	1:	"Date",
+	60:	"Heat",
+	61:	"x",
+	62:	"x",
+	63:	"x",
+	95:	"x",
+	96:	"x",
+	97:	"x",
+}
+
+kamstrup_MC601_var = {
+	0x003C: "Energy register 1: Heat energy",
+	0x0044: "Volume register V1",
+	0x0058: "Current temperature T3",
+	0x03EC: "Operation hours counter",
 }
 
 
