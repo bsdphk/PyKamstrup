@@ -14,10 +14,6 @@ from __future__ import print_function
 import serial
 import math
 
-# TODO:
-# - Fix CRC errors
-# - Correctly parse multical21 INFO field
-
 
 #######################################################################
 # These are the variables I have managed to identify
@@ -235,11 +231,8 @@ class kamstrup(object):
 			else:
 				c.append(b[i])
 				i += 1
-
-		crc = crc_1021(c[:-2])
-		if c[-2] != crc >> 8 or c[-1] != crc & 0xff:
+		if crc_1021(c):
 			self.debug_msg("CRC error")
-
 		return c[:-2]
 
 	def process_response(self, nbr, data):
