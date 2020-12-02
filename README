@@ -1,3 +1,17 @@
+2020-12-02 Update:
+------------------
+
+The local utility has replaced my electricity-meter, so I no longer have
+any Kamstrup devices to test against.
+
+I would really appreciate if somebody else could take over this project.
+
+Thanks,
+
+Poul-Henning
+
+
+
 This is an implementation of the Kamstrup Meter Protocol (KMP) based
 on reverse engineering of a traffic dump.
 
