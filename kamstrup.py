@@ -10,10 +10,10 @@
 
 from __future__ import print_function
 
-# You need pySerial 
+# You need pySerial
 import serial
-
 import math
+
 
 #######################################################################
 # These are the variables I have managed to identify
@@ -47,7 +47,7 @@ kamstrup_382_var = {
 	0x005B: "Pressure in flow",
 	0x005C: "Pressure in return flow",
 	0x004A: "Current flow in flow",
-	0x004B: "Current flow in return flow"
+	0x004B: "Current flow in return flow",
 	0x03ff: "Power In",
 	0x0438: "Power p1 In",
 	0x0439: "Power p2 In",
@@ -75,6 +75,16 @@ kamstrup_MC601_var = {
 	0x0044: "Volume register V1",
 	0x0058: "Current temperature T3",
 	0x03EC: "Operation hours counter",
+}
+
+kamstrup_MC21_var = {
+	0x0044: "V1",
+	0x00f3: "V1 Reverse",
+	0x004a: "Flow",
+	0x03ec: "Hours counter",
+	0x0063: "Info",
+	0x012b: "Meter temperature",
+	0x0124: "Water temperature",
 }
 
 
@@ -161,7 +171,7 @@ class kamstrup(object):
 
 	def wr(self, b):
 		b = bytearray(b)
-		self.debug("Wr", b);
+		self.debug("Wr", b)
 		self.ser.write(b)
 
 	def rd(self):
@@ -194,16 +204,20 @@ class kamstrup(object):
 		self.wr(c)
 
 	def recv(self):
-		b = bytearray()
+		# Skip first response, which is repetition of initial command,
+		# only break on 0x0d if it comes after 0x40
+		b = None
 		while True:
 			d = self.rd()
 			if d == None:
 				return None
 			if d == 0x40:
 				b = bytearray()
-			b.append(d)
-			if d == 0x0d:
-				break
+			if b != None:
+				b.append(d)
+				if d == 0x0d:
+					break
+
 		c = bytearray()
 		i = 1;
 		while i < len(b) - 1:
@@ -221,10 +235,54 @@ class kamstrup(object):
 			self.debug_msg("CRC error")
 		return c[:-2]
 
+	def process_response(self, nbr, data):
+		# Process response data
+
+		if data[0] != nbr >> 8 or data[1] != nbr & 0xff:
+			self.debug_msg("NBR error")
+			return (None, None)
+
+		if data[2] in units:
+			u = units[data[2]]
+		else:
+			u = None
+
+		# Decode the mantissa
+		x = 0
+		for i in range(0,data[3]):
+			x <<= 8
+			x |= data[i + 5]
+
+		# Decode the exponent
+		i = data[4] & 0x3f
+		if data[4] & 0x40:
+			i = -i
+		i = math.pow(10,i)
+		if data[4] & 0x80:
+			i = -i
+		x *= i
+
+		if False:
+			# Debug print
+			s = ""
+			for i in data[:2]:
+				s += " %02x" % i
+			s += " |"
+			for i in data[2:5]:
+				s += " %02x" % i
+			s += " |"
+			for i in data[5:5+data[3]]:
+				s += " %02x" % i
+			s += " ||"
+			for i in data[5+data[3]:]:
+				s += " %02x" % i
+
+			print(s, "=", x, units[data[2]])
+
+		return x, u
+
 	def readvar(self, nbr):
-		# I wouldn't be surprised if you can ask for more than
-		# one variable at the time, given that the length is
-		# encoded in the response.  Havn't tried.
+		# Read single variable
 
 		self.send(0x80, (0x3f, 0x10, 0x01, nbr >> 8, nbr & 0xff))
 
@@ -235,45 +293,50 @@ class kamstrup(object):
 		if b[0] != 0x3f or b[1] != 0x10:
 			return (None, None)
 
-		if b[2] != nbr >> 8 or b[3] != nbr & 0xff:
-			return (None, None)
-
-		if b[4] in units:
-			u = units[b[4]]
-		else:
-			u = None
-
-		# Decode the mantissa
-		x = 0
-		for i in range(0,b[5]):
-			x <<= 8
-			x |= b[i + 7]
-
-		# Decode the exponent
-		i = b[6] & 0x3f
-		if b[6] & 0x40:
-			i = -i
-		i = math.pow(10,i)
-		if b[6] & 0x80:
-			i = -i
-		x *= i
-
-		if False:
-			# Debug print
-			s = ""
-			for i in b[:4]:
-				s += " %02x" % i
-			s += " |"
-			for i in b[4:7]:
-				s += " %02x" % i
-			s += " |"
-			for i in b[7:]:
-				s += " %02x" % i
-
-			print(s, "=", x, units[b[4]])
+		x, u = self.process_response(nbr, b[2:])
 
 		return (x, u)
-			
+
+	def readvar_multiple(self, multiple_nbr):
+		# Read multiple vars at once
+
+		# Construct request
+		req = bytearray()
+		req.append(0x3f) #destination address
+		req.append(0x10) #CID
+		req.append(len(multiple_nbr)) #number of nbrs
+		for nbr in multiple_nbr:
+			req.append(nbr >> 8)
+			req.append(nbr & 0xff)
+
+		self.send(0x80, req)
+
+		# Process response
+		b = self.recv()
+		if b == None:
+			return (None, None)
+
+		# Check destination address and CID
+		if b[0] != 0x3f or b[1] != 0x10:
+			return (None, None)
+
+		# Decode response data, containing multiple variables
+		result = {}
+		remaining_data = b[2:]
+		counter = 0
+		# Continue processing data until all variables processed
+		while counter < (len(multiple_nbr)):
+			current_nbr = multiple_nbr[counter]
+			x, u = self.process_response(current_nbr,remaining_data)
+			result[current_nbr] = (x,u)
+			# length of current variable response data =
+			# nbr (2) + units (1) + length (1) + sigexp (1) (=5)
+			# + length of actual value
+			len_current_nbr = 5 + remaining_data[3]
+			remaining_data = remaining_data[len_current_nbr:]
+			counter += 1
+
+		return result
 
 if __name__ == "__main__":
 
@@ -284,3 +347,9 @@ if __name__ == "__main__":
 	for i in kamstrup_382_var:
 		x,u = foo.readvar(i)
 		print("%-25s" % kamstrup_382_var[i], x, u)
+
+	# Multiple var example using multical 21:
+	# result = foo.readvar_multiple(kamstrup_MC21_var.keys())
+	# for i in result:
+	#     x, u = result[i]
+	#     print("%-25s" % kamstrup_MC21_var[i], x, u)
