@@ -21,6 +21,23 @@ import sys
 # These are the variables I have managed to identify
 # Submissions welcome.
 
+kamstrup_603_var = {
+  60: "Heat energy E1",
+  63: "Cooling energy E3",
+  68: "Volume V1",
+  86: "Inlet temperature t1",
+  87: "Outlet temperature t2",
+  89: "Differential temperature t1-t2",
+  80: "Actual power",
+  74: "Actual flow",
+  99: "Info codes",
+  369: "Info codes",
+  1004: "Operating hour counter",
+  175: "Error hour counter",
+  404: "Meter type",
+  1001: "Serial number"
+}
+
 kamstrup_382_var = {
   0x0001: "Energy in",
   0x0002: "Energy out",
@@ -366,6 +383,6 @@ if __name__ == "__main__":
 
   foo = Kamstrup(serial_port='/dev/ttyUSB2')
 
-  for i in kamstrup_382_var:
+  for i in kamstrup_603_var:
     x,u = foo.readvar(i)
-    print("%-25s" % kamstrup_382_var[i], x, u)
+    print("%-25s" % kamstrup_603_var[i], x, u)
