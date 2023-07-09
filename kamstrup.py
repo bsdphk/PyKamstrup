@@ -297,7 +297,11 @@ def main():
     arg_parser.add_argument('-v', action='count', help='Set verbosity, repeat to increase level', dest='verbosity_level', default=0)
     arg_parser.add_argument('-t', '--target', help='Kamstrup device type to retrieve data from', choices=Kamstrup.SUPPORTED_TYPES.keys(), default='MC603')
     arg_parser.add_argument('-p', '--port', help='Path to serial port', default='/dev/ttyUSB2')
+    arg_parser.add_argument('registers', nargs='*', help="Registers to extract", default=None)
     args = arg_parser.parse_args()
+
+    if len(args.registers) == 0:
+        args.registers = None
 
     verbosity_level = args.verbosity_level
     log_levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG, 0]
@@ -305,8 +309,9 @@ def main():
 
     kamstrup = Kamstrup(serial_port=args.port)
     for register, description in Kamstrup.SUPPORTED_TYPES[args.target].items():
-        value, unit = kamstrup.readvar(register)
-        print(f"{description:25s} {value} {unit}")
+        if args.registers is None or f"0x{register:04X}" in args.registers or description in args.registers:
+            value, unit = kamstrup.readvar(register)
+            print(f"{description:25s} {value} {unit}")
 
 if __name__ == "__main__":
     main()
