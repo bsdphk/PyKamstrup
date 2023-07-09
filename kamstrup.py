@@ -19,29 +19,29 @@ import serial
 # Submissions welcome.
 
 kamstrup_603_var = {
-    60: "Heat energy E1",
-    63: "Cooling energy E3",
-    68: "Volume V1",
-    86: "Inlet temperature t1",
-    87: "Outlet temperature t2",
-    89: "Differential temperature t1-t2",
-    80: "Actual power",
-    74: "Actual flow",
-    99: "Info codes",
-    369: "Info codes",
-    1004: "Operating hour counter",
-    175: "Error hour counter",
-    404: "Meter type",
-    1001: "Serial number"
+    0x003C: "Heat energy E1",
+    0x003F: "Cooling energy E3",
+    0x0044: "Volume V1",
+    0x0056: "Inlet temperature t1",
+    0x0057: "Outlet temperature t2",
+    0x0059: "Differential temperature t1-t2",
+    0x0050: "Actual power",
+    0x004A: "Actual flow",
+    0x0063: "Info codes",
+    0x0171: "Info codes",
+    0x03EC: "Operating hour counter",
+    0x00AF: "Error hour counter",
+    0x0194: "Meter type",
+    0x03E9: "Serial number"
 }
 
 kamstrup_382_var = {
     0x0001: "Energy in",
     0x0002: "Energy out",
-    0x000d: "Energy in hi-res",
-    0x000e: "Energy out hi-res",
-    0x041e: "Voltage p1",
-    0x041f: "Voltage p2",
+    0x000D: "Energy in hi-res",
+    0x000E: "Energy out hi-res",
+    0x041E: "Voltage p1",
+    0x041F: "Voltage p2",
     0x0420: "Voltage p3",
     0x0434: "Current p1",
     0x0435: "Current p2",
@@ -55,10 +55,10 @@ kamstrup_382_var = {
     0x005C: "Pressure in return flow",
     0x004A: "Current flow in flow",
     0x004B: "Current flow in return flow",
-    0x03ff: "Power In",
+    0x03FF: "Power In",
     0x0438: "Power p1 In",
     0x0439: "Power p2 In",
-    0x043a: "Power p3 In",
+    0x043A: "Power p3 In",
     0x0400: "Power In",
     0x0540: "Power p1 Out",
     0x0541: "Power p2 Out",
@@ -66,14 +66,14 @@ kamstrup_382_var = {
 }
 
 kamstrup_681_var = {
-    1:	"Date",
-    60:	"Heat",
-    61:	"x",
-    62:	"x",
-    63:	"x",
-    95:	"x",
-    96:	"x",
-    97:	"x",
+    0x0001: "Date",
+    0x003C: "Heat",
+    0x003D: "x",
+    0x003E: "x",
+    0x003F: "x",
+    0x005F: "x",
+    0x0060: "x",
+    0x0061: "x",
 }
 
 kamstrup_MC601_var = {
@@ -99,24 +99,24 @@ kamstrup_multical402_var = ({'baudrate':1200},{
 })
 
 kamstrup_MC21_var = {
-    0x44: 'Volume register V1', # (m3)
-    0x4A: 'Current flow', # (l/h)
-    0xEF: 'Volume', #  (l)
+    0x0044: 'Volume register V1', # (m3)
+    0x004A: 'Current flow', # (l/h)
+    0x00EF: 'Volume', #  (l)
 }
 
 kamstrup_MC403_var = {
-    0x3C: 'Energy register 1: Heat energy', # (MWh)
-    0x50: 'Current Power', #  (kW)
-    0x56: 'Current flow temperature', # (C)
-    0x57: 'Current return flow temperature', # (C)
-    0x59: 'Current temperature difference', # (K)
-    0x4A: 'Current flow', # (l/h)
-    0x44: 'Volume register V1', # (m3)
+    0x003C: 'Energy register 1: Heat energy', # (MWh)
+    0x0050: 'Current Power', #  (kW)
+    0x0056: 'Current flow temperature', # (C)
+    0x0057: 'Current return flow temperature', # (C)
+    0x0059: 'Current temperature difference', # (K)
+    0x004A: 'Current flow', # (l/h)
+    0x0044: 'Volume register V1', # (m3)
 }
 
 kamstrup_681_var = {
-    1:	"Date",
-    60:	"Heat",
+    0x0001: "Date",
+    0x003C: "Heat",
 }
 
 kamstrup_MC601_var = {
@@ -129,29 +129,29 @@ kamstrup_MC601_var = {
 kamstrup_162J_var = {
     0x0001: "Energy-in-low-res",
     0x0002: "Energy-out-low-res",
-    0x000d: "Ap",
-    0x000e: "Am",
-    0x041e: "U1",
+    0x000D: "Ap",
+    0x000E: "Am",
+    0x041E: "U1",
     0x0434: "I1",
     0x0438: "P1",
-    0x03e9: 'Meter-serialnumber',
+    0x03E9: 'Meter-serialnumber',
 }
 
 kamstrup_362J_var = {
     0x0001: "Energy-in-low-res",
     0x0002: "Energy-out-low-res",
-    0x000d: "Ap",
-    0x000e: "Am",
-    0x041e: "U1",
-    0x041f: "U2",
+    0x000D: "Ap",
+    0x000E: "Am",
+    0x041E: "U1",
+    0x041F: "U2",
     0x0420: "U3",
     0x0434: "I1",
     0x0435: "I2",
     0x0436: "I3",
     0x0438: "P1",
     0x0439: "P2",
-    0x043a: "P3",
-    0x03e9: 'Meter-serialnumber',
+    0x043A: "P3",
+    0x03E9: 'Meter-serialnumber',
 }
 
 
@@ -189,7 +189,7 @@ def crc_1021(message):
                 reg |= 1
             mask>>=1
             if reg & 0x10000:
-                reg &= 0xffff
+                reg &= 0xFFFF
                 reg ^= poly
     return reg
 
@@ -198,8 +198,8 @@ def crc_1021(message):
 #
 escapes = {
     0x06: True,
-    0x0d: True,
-    0x1b: True,
+    0x0D: True,
+    0x1B: True,
     0x40: True,
     0x80: True,
 }
@@ -215,8 +215,8 @@ class Kamstrup(object):
         self.debug_id = None
         self.ser = serial.Serial(port = serial_port, baudrate = 1200, timeout = 1.0)
 
-    def debug(self, directive, bytes):
-        for byte in bytes:
+    def debug(self, directive, bytes_as_array):
+        for byte in bytes_as_array:
             if directive != self.debug_id:
                 if self.debug_id is not None:
                     self.debug_fd.write("\n")
@@ -232,115 +232,121 @@ class Kamstrup(object):
         self.debug_fd.write("Msg\t" + msg)
         self.debug_fd.flush()
 
-    def write(self, bytes):
-        bytesAsArray = bytearray(bytes)
-        self.debug("Write", bytesAsArray)
-        self.ser.write(bytesAsArray)
+    def write(self, bytes_list):
+        bytes_as_array = bytearray(bytes_list)
+        self.debug("Write", bytes_as_array)
+        self.ser.write(bytes_as_array)
 
     def read(self):
         byte = self.ser.read(1)
         if len(byte) == 0:
             self.debug_msg("Rx Timeout")
             return None
-        bytes = bytearray(byte)[0]
-        self.debug("Rd", bytearray((bytes)))
-        return bytes
+        bytes_as_array = bytearray(byte)[0]
+        self.debug("Rd", bytearray((bytes_as_array)))
+        return bytes_as_array
 
-    def send(self, pfx, msg):
-        bytes = bytearray(msg)
+    def send(self, prefix, msg):
+        bytes_as_array = bytearray(msg)
 
-        crc = crc_1021(bytes)
-        bytes.append(crc >> 8)
-        bytes.append(crc & 0xff)
+        bytes_as_array.append(0)
+        bytes_as_array.append(0)
+        crc = crc_1021(bytes_as_array)
+        bytes_as_array[-2] = crc >> 8
+        bytes_as_array[-1] = crc & 0xFF
 
-        c = bytearray()
-        c.append(pfx)
-        for i in bytes:
-            if i in escapes:
-                c.append(0x1b)
-                c.append(i ^ 0xff)
+        message_bytes = bytearray()
+        message_bytes.append(prefix)
+        for byte in bytes_as_array:
+            if byte in escapes:
+                message_bytes.append(0x1B)
+                message_bytes.append(byte ^ 0xFF)
             else:
-                c.append(i)
-        c.append(0x0d)
-        self.write(c)
+                message_bytes.append(byte)
+        message_bytes.append(0x0D)
+        self.write(message_bytes)
 
     def recv(self):
-        b = bytearray()
+        bytes_read = bytearray()
         while True:
-            d = self.read()
-            if d == None:
+            byte = self.read()
+            if byte is None:
                 return None
-            if d == 0x40:
-                b = bytearray()
-            b.append(d)
-            if d == 0x0d:
+            if byte == 0x40:
+                bytes_read = bytearray()
+            bytes_read.append(byte)
+            if byte == 0x0D:
                 break
-        c = bytearray()
+        message_bytes = bytearray()
         i = 1
-        while i < len(b) - 1:
-            if b[i] == 0x1b:
-                v = b[i + 1] ^ 0xff
-                if v not in escapes:
-                    self.debug_msg("Missing Escape %02x" % v)
-                c.append(v)
+        while i < len(bytes_read) - 1:
+            if bytes_read[i] == 0x1B:
+                byte = bytes_read[i + 1] ^ 0xFF
+                if byte not in escapes:
+                    self.debug_msg(f"Missing Escape {byte:02x}")
+                message_bytes.append(byte)
                 i += 2
             else:
-                c.append(b[i])
+                message_bytes.append(bytes_read[i])
                 i += 1
-        if crc_1021(c):
+        if crc_1021(message_bytes):
             self.debug_msg("CRC error")
-        return c#[:-2]
+        return message_bytes#[:-2]
 
     def readvar(self, nbr):
         # I wouldn't be surprised if you can ask for more than
         # one variable at the time, given that the length is
         # encoded in the response.  Havn't tried.
-        self.send(0x80, (0x3f, 0x10, 0x01, nbr >> 8, nbr & 0xff))
-        b = self.recv()
-        if b is None:
+        self.send(0x80, (0x3F, 0x10, 0x01, nbr >> 8, nbr & 0xFF))
+        message_bytes = self.recv()
+        if message_bytes is None:
             return (None, None)
 
-        if b[0] != 0x3f or b[1] != 0x10:
+        if message_bytes[0] != 0x3F or message_bytes[1] != 0x10:
             return (None, None)
-        if b[2] != nbr >> 8 or b[3] != nbr & 0xff:
+        if message_bytes[2] != nbr >> 8 or message_bytes[3] != nbr & 0xFF:
             return (None, None)
-        if b[4] in units:
-            unit = units[b[4]]
+        if message_bytes[4] in units:
+            unit = units[message_bytes[4]]
         else:
             unit = None
         # Decode the mantissa
         mantissa = 0
-        for i in range(0,b[5]):
+        for i in range(0, message_bytes[5]):
             mantissa <<= 8
-            mantissa |= b[i + 7]
+            mantissa |= message_bytes[i + 7]
 
         # Decode the exponent
-        i = b[6] & 0x3f
-        if b[6] & 0x40:
+        i = message_bytes[6] & 0x3F
+        if message_bytes[6] & 0x40:
             i = -i
         i = pow(10, i)
-        if b[6] & 0x80:
+        if message_bytes[6] & 0x80:
             i = -i
-        mantissa *= i
+        value = mantissa * i
 
         if False:
             # Debug print
-            s = ""
-            for i in b[:4]:
-                s += " %02x" % i
-            s += " |"
-            for i in b[4:7]:
-                s += " %02x" % i
-            s += " |"
-            for i in b[7:]:
-                s += " %02x" % i
-            print(s, "=", mantissa, units[b[4]])
+            string = ""
+            for i in message_bytes[:4]:
+                string += f" {i:02x}"
+            string += " |"
+            for i in message_bytes[4:7]:
+                string += f" {i:02x}"
+            string += " |"
+            for i in message_bytes[7:]:
+                string += f" {i:02x}"
+            print(string, "=", value, units[message_bytes[4]])
 
-        return (mantissa, unit)
+        return (value, unit)
+
+def main():
+    kamstrup = Kamstrup(serial_port='/dev/ttyUSB2')
+    for register, description in kamstrup_603_var.items():
+        value, unit = kamstrup.readvar(register)
+        print(f"{description:25s} {value} {unit}")
+
 
 
 if __name__ == "__main__":
-    foo = Kamstrup(serial_port='/dev/ttyUSB2')
-    for register in kamstrup_603_var:
-        x,u = foo.readvar(register)
-        print("%-25s" % kamstrup_603_var[register], x, u)
+    main()
