@@ -9,10 +9,9 @@
 
 # pylint: disable=line-too-long, missing-module-docstring, missing-class-docstring, missing-function-docstring
 
-# You need pySerial
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
-import serial
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from serial import Serial
 
 class Kamstrup(object):
     #######################################################################
@@ -158,7 +157,7 @@ class Kamstrup(object):
     ESCAPES = [0x06, 0x0D, 0x1B, 0x40, 0x80]
 
     def __init__(self, serial_port = "/dev/cuaU0"):
-        self._ser = serial.Serial(port = serial_port, baudrate = 1200, timeout = 1.0)
+        self._ser = Serial(port = serial_port, baudrate = 1200, timeout = 1.0)
 
     def __del__(self):
         self._ser.close()
