@@ -10,8 +10,9 @@
 # pylint: disable=line-too-long, missing-module-docstring, missing-class-docstring, missing-function-docstring
 
 # You need pySerial
-# from math import pow
-from sys import stderr
+from argparse import ArgumentParser
+from pprint import pprint
+import logging
 import serial
 
 #######################################################################
@@ -209,28 +210,16 @@ escapes = {
 #
 class Kamstrup(object):
     def __init__(self, serial_port = "/dev/cuaU0"):
-        #self.debug_fd = open("/tmp/_kamstrup", "a")
-        self.debug_fd = stderr
-        self.debug_fd.write("\n\nStart\n")
-        self.debug_id = None
         self.ser = serial.Serial(port = serial_port, baudrate = 1200, timeout = 1.0)
 
-    def debug(self, directive, bytes_as_array):
+    def debug(self, message_id, bytes_as_array):
+        log_message = f"{message_id}\t"
         for byte in bytes_as_array:
-            if directive != self.debug_id:
-                if self.debug_id is not None:
-                    self.debug_fd.write("\n")
-                self.debug_fd.write(directive + "\t")
-                self.debug_id = directive
-            self.debug_fd.write(f" {byte:02x} ")
-        self.debug_fd.flush()
+            log_message += f" {byte:02x} "
+        logging.info(log_message)
 
     def debug_msg(self, msg):
-        if self.debug_id is not None:
-            self.debug_fd.write("\n")
-        self.debug_id = "Msg"
-        self.debug_fd.write("Msg\t" + msg)
-        self.debug_fd.flush()
+        logging.info("Msg\t%s", msg)
 
     def write(self, bytes_list):
         bytes_as_array = bytearray(bytes_list)
@@ -325,8 +314,7 @@ class Kamstrup(object):
             i = -i
         value = mantissa * i
 
-        if False:
-            # Debug print
+        if logging.root.level == 0:
             string = ""
             for i in message_bytes[:4]:
                 string += f" {i:02x}"
@@ -336,11 +324,24 @@ class Kamstrup(object):
             string += " |"
             for i in message_bytes[7:]:
                 string += f" {i:02x}"
-            print(string, "=", value, units[message_bytes[4]])
+            logging.debug(string, "=", value, units[message_bytes[4]])
 
         return (value, unit)
 
 def main():
+    arg_parser = ArgumentParser(description="Retrieve data from Kamstrup devices")#, formatter_class=RawTextHelpFormatter)
+    arg_parser.add_argument('-v', action='count', help='Set verbosity, repeat to increase level', dest='verbosity_level', default=0)
+    # arg_parser.add_argument('sources', nargs='*', help='Power meters to retrieve', choices=list(e.value for e in Powermeters).append(None))
+    args = arg_parser.parse_args()
+
+    # if len(args.sources) == 0:
+    #     args.sources = list(e.value for e in Powermeters)
+
+    verbosity_level = args.verbosity_level
+    log_levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG, 0]
+    print(log_levels[verbosity_level if verbosity_level < len(log_levels) else len(log_levels)-1])
+    logging.basicConfig(format='%(message)s', level=log_levels[verbosity_level if verbosity_level < len(log_levels) else len(log_levels)-1])
+
     kamstrup = Kamstrup(serial_port='/dev/ttyUSB2')
     for register, description in kamstrup_603_var.items():
         value, unit = kamstrup.readvar(register)
