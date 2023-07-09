@@ -26,7 +26,7 @@ class Kamstrup(object):
             0x0057: "Outlet temperature t2",
             0x0059: "Differential temperature t1-t2",
             0x0050: "Actual heat",
-            0x004A: "Actual heat flow",
+            0x004A: "Actual flow",
             0x0063: "Info codes",
             0x0171: "Info codes",
             0x03EC: "Operating hour counter",
