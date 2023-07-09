@@ -10,7 +10,7 @@
 # pylint: disable=line-too-long, missing-module-docstring, missing-class-docstring, missing-function-docstring
 
 # You need pySerial
-from math import pow
+# from math import pow
 from sys import stderr
 import serial
 
@@ -183,7 +183,7 @@ def crc_1021(message):
     reg = 0x0000
     for byte in message:
         mask = 0x80
-        while(mask > 0):
+        while mask > 0:
             reg<<=1
             if byte & mask:
                 reg |= 1
@@ -215,14 +215,14 @@ class Kamstrup(object):
         self.debug_id = None
         self.ser = serial.Serial(port = serial_port, baudrate = 1200, timeout = 1.0)
 
-    def debug(self, directory, b):
-        for i in b:
-            if directory != self.debug_id:
+    def debug(self, directive, bytes):
+        for byte in bytes:
+            if directive != self.debug_id:
                 if self.debug_id is not None:
                     self.debug_fd.write("\n")
-                self.debug_fd.write(directory + "\t")
-                self.debug_id = directory
-            self.debug_fd.write(" %02x " % i)
+                self.debug_fd.write(directive + "\t")
+                self.debug_id = directive
+            self.debug_fd.write(f" {byte:02x} ")
         self.debug_fd.flush()
 
     def debug_msg(self, msg):
@@ -232,44 +232,42 @@ class Kamstrup(object):
         self.debug_fd.write("Msg\t" + msg)
         self.debug_fd.flush()
 
-    def wr(self, b):
-        b = bytearray(b)
-        self.debug("Wr", b);
-        self.ser.write(b)
+    def write(self, bytes):
+        bytesAsArray = bytearray(bytes)
+        self.debug("Write", bytesAsArray)
+        self.ser.write(bytesAsArray)
 
-    def rd(self):
-        a = self.ser.read(1)
-        if len(a) == 0:
+    def read(self):
+        byte = self.ser.read(1)
+        if len(byte) == 0:
             self.debug_msg("Rx Timeout")
             return None
-        b = bytearray(a)[0]
-        self.debug("Rd", bytearray((b,)));
-        return b
+        bytes = bytearray(byte)[0]
+        self.debug("Rd", bytearray((bytes)))
+        return bytes
 
     def send(self, pfx, msg):
-        b = bytearray(msg)
+        bytes = bytearray(msg)
 
-        b.append(0)
-        b.append(0)
-        c = crc_1021(b)
-        b[-2] = c >> 8
-        b[-1] = c & 0xff
+        crc = crc_1021(bytes)
+        bytes.append(crc >> 8)
+        bytes.append(crc & 0xff)
 
         c = bytearray()
         c.append(pfx)
-        for i in b:
+        for i in bytes:
             if i in escapes:
                 c.append(0x1b)
                 c.append(i ^ 0xff)
             else:
                 c.append(i)
         c.append(0x0d)
-        self.wr(c)
+        self.write(c)
 
     def recv(self):
         b = bytearray()
         while True:
-            d = self.rd()
+            d = self.read()
             if d == None:
                 return None
             if d == 0x40:
@@ -299,7 +297,7 @@ class Kamstrup(object):
         # encoded in the response.  Havn't tried.
         self.send(0x80, (0x3f, 0x10, 0x01, nbr >> 8, nbr & 0xff))
         b = self.recv()
-        if b == None:
+        if b is None:
             return (None, None)
 
         if b[0] != 0x3f or b[1] != 0x10:
@@ -307,23 +305,23 @@ class Kamstrup(object):
         if b[2] != nbr >> 8 or b[3] != nbr & 0xff:
             return (None, None)
         if b[4] in units:
-            u = units[b[4]]
+            unit = units[b[4]]
         else:
-            u = None
+            unit = None
         # Decode the mantissa
-        x = 0
+        mantissa = 0
         for i in range(0,b[5]):
-            x <<= 8
-            x |= b[i + 7]
+            mantissa <<= 8
+            mantissa |= b[i + 7]
 
         # Decode the exponent
         i = b[6] & 0x3f
         if b[6] & 0x40:
-           i = -i
+            i = -i
         i = pow(10, i)
         if b[6] & 0x80:
             i = -i
-        x *= i
+        mantissa *= i
 
         if False:
             # Debug print
@@ -336,13 +334,13 @@ class Kamstrup(object):
             s += " |"
             for i in b[7:]:
                 s += " %02x" % i
-            print(s, "=", x, units[b[4]])
+            print(s, "=", mantissa, units[b[4]])
 
-        return (x, u)
+        return (mantissa, unit)
 
 
 if __name__ == "__main__":
     foo = Kamstrup(serial_port='/dev/ttyUSB2')
-    for i in kamstrup_603_var:
-        x,u = foo.readvar(i)
-        print("%-25s" % kamstrup_603_var[i], x, u)
+    for register in kamstrup_603_var:
+        x,u = foo.readvar(register)
+        print("%-25s" % kamstrup_603_var[register], x, u)
