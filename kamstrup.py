@@ -296,7 +296,11 @@ def main():
     arg_parser = ArgumentParser(description="Retrieve data from Kamstrup devices", formatter_class=ArgumentDefaultsHelpFormatter)#, formatter_class=RawTextHelpFormatter)
     arg_parser.add_argument('-v', action='count', help='Set verbosity, repeat to increase level', dest='verbosity_level', default=0)
     arg_parser.add_argument('-t', '--target', help='Kamstrup device type to retrieve data from', choices=Kamstrup.SUPPORTED_TYPES.keys(), default='MC603')
-    arg_parser.add_argument('-p', '--port', help='Path to serial port', default='/dev/ttyUSB2')
+    arg_parser.add_argument('-p', '--port', help='Path to serial port', default='/dev/ttyKamstrup')
+    # To add named tty:
+    #  1. find device identification: udevadm info --name=/dev/ttyUSB0 --attribute-walk
+    #  2. create udev rule (e.g. /etc/udev/rules.d/50-oldchap-usbserial.rules)
+    #       SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", SYMLINK+="ttyKamstrup"
     arg_parser.add_argument('registers', nargs='*', help="Registers to extract", default=None)
     args = arg_parser.parse_args()
 
