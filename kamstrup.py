@@ -25,7 +25,7 @@ class Kamstrup(object):
             0x0056: "Inlet temperature t1",
             0x0057: "Outlet temperature t2",
             0x0059: "Differential temperature t1-t2",
-            0x0050: "Actual power",
+            0x0050: "Actual heat",
             0x004A: "Actual flow",
             0x0063: "Info codes",
             0x0171: "Info codes",
@@ -138,8 +138,8 @@ class Kamstrup(object):
     #######################################################################
     # Units, provided by Erik Jensen
     UNITS = {
-        0: '', 1: 'Wh', 2: 'kWh', 3: 'MWh', 4: 'GWh', 5: 'j', 6: 'kj', 7: 'Mj',
-        8: 'Gj', 9: 'Cal', 10: 'kCal', 11: 'Mcal', 12: 'Gcal', 13: 'varh',
+        0: '', 1: 'Wh', 2: 'kWh', 3: 'MWh', 4: 'GWh', 5: 'J', 6: 'kJ', 7: 'MJ',
+        8: 'GJ', 9: 'Cal', 10: 'kCal', 11: 'Mcal', 12: 'Gcal', 13: 'varh',
         14: 'kvarh', 15: 'Mvarh', 16: 'Gvarh', 17: 'VAh', 18: 'kVAh',
         19: 'MVAh', 20: 'GVAh', 21: 'kW', 22: 'kW', 23: 'MW', 24: 'GW',
         25: 'kvar', 26: 'kvar', 27: 'Mvar', 28: 'Gvar', 29: 'VA', 30: 'kVA',
@@ -296,8 +296,16 @@ def main():
     arg_parser = ArgumentParser(description="Retrieve data from Kamstrup devices", formatter_class=ArgumentDefaultsHelpFormatter)#, formatter_class=RawTextHelpFormatter)
     arg_parser.add_argument('-v', action='count', help='Set verbosity, repeat to increase level', dest='verbosity_level', default=0)
     arg_parser.add_argument('-t', '--target', help='Kamstrup device type to retrieve data from', choices=Kamstrup.SUPPORTED_TYPES.keys(), default='MC603')
-    arg_parser.add_argument('-p', '--port', help='Path to serial port', default='/dev/ttyUSB2')
+    arg_parser.add_argument('-p', '--port', help='Path to serial port', default='/dev/ttyKamstrup')
+    # To add named tty:
+    #  1. find device identification: udevadm info --name=/dev/ttyUSB0 --attribute-walk
+    #  2. create udev rule (e.g. /etc/udev/rules.d/50-oldchap-usbserial.rules)
+    #       SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", SYMLINK+="ttyKamstrup"
+    arg_parser.add_argument('registers', nargs='*', help="Registers to extract", default=None)
     args = arg_parser.parse_args()
+
+    if len(args.registers) == 0:
+        args.registers = None
 
     verbosity_level = args.verbosity_level
     log_levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG, 0]
@@ -305,8 +313,9 @@ def main():
 
     kamstrup = Kamstrup(serial_port=args.port)
     for register, description in Kamstrup.SUPPORTED_TYPES[args.target].items():
-        value, unit = kamstrup.readvar(register)
-        print(f"{description:25s} {value} {unit}")
+        if args.registers is None or f"0x{register:04X}" in args.registers or description in args.registers:
+            value, unit = kamstrup.readvar(register)
+            print(f"{description:25s} {value} {unit}")
 
 if __name__ == "__main__":
     main()
